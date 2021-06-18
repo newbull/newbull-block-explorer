@@ -1,6 +1,6 @@
 # NewBull Block Explorer
 
-[NewBull Block Explorer](https://github.com/newbull/block-explorer) is a simple and lightweight block explorer written in PHP(no database required) with `easybitcoin.php` ([get it here](https://github.com/aceat64/EasyBitcoin-PHP)).
+[NewBull Block Explorer](https://github.com/newbull/newbull-block-explorer) is a simple and lightweight block explorer written in PHP(no database required) with `easybitcoin.php` ([get it here](https://github.com/aceat64/EasyBitcoin-PHP)).
 
 NewBull Block Explorer work with [NewBull Core](https://newbull.org) fine. It's should work with others pow block chain, such as Bitcoin.
 
