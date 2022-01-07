@@ -8,6 +8,7 @@
 					<th>Hashrate</th>
 					<th>Difficulty</th>
 					<th>Blockchain</th>
+					<th>Connections</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -17,6 +18,7 @@
 					<td>{$hashrate}</td>
 					<td>{$difficulty} ({$nextdiff_blocks})</td>
 					<td>{$chain}</td>
+					<td>{$connections}</td>
 				</tr>
 			</tbody>
 		</table>
@@ -44,11 +46,13 @@
 		<ul class="pager">
 			<li class="" {$newer_page_display}>
 				<a href="{$newer_page}">
-					<span aria-hidden="true">&larr;</span> Newer</a></li>
+					<span aria-hidden="true">&larr;</span> Newer</a>
+			</li>
 			<li>&nbsp;&nbsp;</li>
 			<li class="" {$older_page_display}>
 				<a href="{$older_page}">
-					Older <span aria-hidden="true">&rarr;</span></a></a></li>
+					Older <span aria-hidden="true">&rarr;</span></a></a>
+			</li>
 		</ul>
 	</nav>
 	<div class="" {$memory_pool_list_tbody_display}>
