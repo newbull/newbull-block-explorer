@@ -1,7 +1,11 @@
 .text-start {
-  text-align: left !important;
+	text-align: left !important;
 }
 
 .text-end {
-  text-align: right !important;
+	text-align: right !important;
+}
+
+.text-black {
+	color: black;
 }
