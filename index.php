@@ -1,5 +1,5 @@
 <?php
-$version = '1.6.0';
+$version = '1.7.0';
 define("IN_SCRIPT", true);
 
 require_once 'conf/config.php';
@@ -312,6 +312,67 @@ switch ($url_param_get_action) {
         break;
     default:
         send404();
+        break;
+    case "stats":
+        $getblockchaininfo = $bitcoinrpc->getblockchaininfo();
+        if ($bitcoinrpc->status !== 200 && $bitcoinrpc->error !== '') {
+            exit($bitcoinrpc->error);
+        }
+        $gettxoutsetinfo = $bitcoinrpc->gettxoutsetinfo();
+        if ($bitcoinrpc->status !== 200 && $bitcoinrpc->error !== '') {
+            exit($bitcoinrpc->error);
+        }
+
+        $output = array();
+        // getblockchaininfo
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\" style=\"width:30%\">chain</th><td class=\"text-start\">" . $getblockchaininfo["chain"] . "</td></tr>";
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">blocks</th><td class=\"text-start\">" . $getblockchaininfo["blocks"] . "</td></tr>";
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">headers</th><td class=\"text-start\">" . $getblockchaininfo["headers"] . "</td></tr>";
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">bestblockhash</th><td class=\"text-start\">" . $getblockchaininfo["bestblockhash"] . "</td></tr>";
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">difficulty</th><td class=\"text-start\">" . $getblockchaininfo["difficulty"] . "</td></tr>";
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">mediantime</th><td class=\"text-start\">" . gmdate($config["date_format"], $getblockchaininfo["mediantime"]) . " UTC</td></tr>";
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">verificationprogress</th><td class=\"text-start\">" . $getblockchaininfo["verificationprogress"] . "</td></tr>";
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">chainwork</th><td class=\"text-start\">" . $getblockchaininfo["chainwork"] . "</td></tr>";
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">pruned</th><td class=\"text-start\">" . ($getblockchaininfo["pruned"] ? "true" : "false") . "</td></tr>";
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">softforks</th><td class=\"text-start\">";
+        if (count($getblockchaininfo["softforks"]) > 0) {
+            $output['stats_tbody'] .= '<table class="table table-bordered text-white-50 w-75 text-center"><tbody>';
+            // $output['stats_tbody'] .= '<tr><th>id</th><th>version</th><th>enforce</th><th>found</th><th>required</th><th>window</th><th>reject</th><th>found</th><th>required</th><th>window</th></tr>';
+            $output['stats_tbody'] .= '<tr><th>id</th><th>version</th><th>reject</th></tr>';
+            foreach ($getblockchaininfo["softforks"] as $softforks) {
+                // $output['stats_tbody'] .= '<tr><td>' . $softforks['id'] . '</td><td>' . $softforks['version'] . '</td><td>' . ($softforks['enforce']['status'] ? 'true' : 'false') . '</td><td>' . $softforks['enforce']['found'] . '</td><td>' . $softforks['enforce']['required'] . '</td><td>' . $softforks['enforce']['window'] . '</td><td>' . ($softforks['reject']['status'] ? 'true' : 'false') . '</td><td>' . $softforks['reject']['found'] . '</td><td>' . $softforks['reject']['required'] . '</td><td>' . $softforks['reject']['window'] . '</td></tr>';
+                $output['stats_tbody'] .= '<tr><td>' . $softforks['id'] . '</td><td>' . $softforks['version'] . '</td><td>' . ($softforks['reject']['status'] ? 'true' : 'false') . '</td></tr>';
+            }
+            $output['stats_tbody'] .= '</tbody></table>';
+        }
+        $output['stats_tbody'] .= '</td></tr>';
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">bip9_softforks</th><td class=\"text-start\">";
+        if (count($getblockchaininfo["bip9_softforks"]) > 0) {
+            $output['stats_tbody'] .= '<table class="table table-bordered text-white-50 w-75 text-center"><tbody>';
+            $output['stats_tbody'] .= '<tr><th>id</th><th>status</th><th>bit</th><th>startTime (UTC)</th><th>timeout (UTC)</th><th>since block</th></tr>';
+            foreach ($getblockchaininfo["bip9_softforks"] as $key => $bip9_softforks) {
+                $output['stats_tbody'] .= '<tr><td>' . $key . '</td><td>' . $bip9_softforks['status'] . '</td><td>' . ($bip9_softforks['bit'] ? $bip9_softforks['bit'] : 0) . '</td><td>' . gmdate($config["date_format"], $bip9_softforks['startTime']) . '</td><td>' . gmdate($config["date_format"], $bip9_softforks['timeout']) . '</td><td>' . $bip9_softforks['since'] . '</td></tr>';
+            }
+            $output['stats_tbody'] .= '</tbody></table>';
+        }
+        $output['stats_tbody'] .= '</td></tr>';
+
+        // gettxoutsetinfo
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">transactions</th><td class=\"text-start\">" . number_format($gettxoutsetinfo["transactions"]) . "" . "</td></tr>";
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">txouts</th><td class=\"text-start\">" . number_format($gettxoutsetinfo["txouts"]) . "" . "</td></tr>";
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">bytes_serialized</th><td class=\"text-start\">" . short_number($gettxoutsetinfo["bytes_serialized"], 1024, 3, " ") . "B" . "</td></tr>";
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">hash_serialized</th><td class=\"text-start\">" . $gettxoutsetinfo["hash_serialized"] . "</td></tr>";
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">total_amount</th><td class=\"text-start\">" . number_format2($config["total_amount"]) . " " . $config["symbol"] . "</td></tr>";
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">mined coins</th><td class=\"text-start\">" . number_format2($gettxoutsetinfo["total_amount"]) . " " . $config["symbol"] . " (" . round($gettxoutsetinfo["total_amount"] / $config["total_amount"] * 100, 2) . "%)</td></tr>";
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">remaining coins</th><td class=\"text-start\">" . number_format2($config["total_amount"] - $gettxoutsetinfo["total_amount"]) . " " . $config["symbol"] . "</td></tr>";
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">block reward</th><td class=\"text-start\">" . $config["block_reward"] . " " . $config["symbol"] . "</td></tr>";
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">Actual Target Spacing</th><td class=\"text-start\">" . round(((time() - $config["genesis_block_timestamp"]) / $getblockchaininfo["blocks"] / 60), 2) . " (" . ($config["nTargetSpacing"] / 60) . ") minutes</td></tr>";
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">age</th><td class=\"text-start\">" . round(((time() - $config["genesis_block_timestamp"]) / 31536000), 2) . " years</td></tr>";
+
+        $output["title"] = "Stats - ";
+        $output["description"] = $config["explorer_name"] . " stats page.";
+
+        exit(get_html("stats-body", $output));
         break;
     case "chaintips":
         $getchaintips = $bitcoinrpc->getchaintips();
