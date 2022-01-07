@@ -350,3 +350,14 @@ function trim_dotzero($number)
 {
     return rtrim(rtrim(sprintf('%.8f', $number), "0"), ".");
 }
+
+function number_format2($number, $decimal = false)
+{
+    $n = rtrim(rtrim(sprintf('%.8f', $number), "0"), ".");
+    if ($decimal !== false) {
+        $n = round($n, $decimal);
+    }
+    $e = explode(".", $n);
+    $r = $e[1] ? number_format($e[0]) . '.' . $e[1] : number_format($e[0]);
+    return $r;
+}
