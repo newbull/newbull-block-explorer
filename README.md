@@ -57,6 +57,12 @@ MIT
 
 ## Changelog
 
+1.7.0 2021-11-27
+
+add stats page;
+
+make the block hash display shorter;
+
 1.6.0 2021-05-31
 
 add chaintips page;
