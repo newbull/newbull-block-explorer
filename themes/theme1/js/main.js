@@ -122,3 +122,24 @@ function get_nextdiff(url_path) {
 		}
 	});
 }
+
+function blockhash_shorter() {
+	$('.blockhash').each(function (index, element) {
+		// console.log(index, $(element).text());
+		// var reg = new RegExp(/\b(0+)/gi);
+		// console.log(reg);
+		// var rs = reg.exec("01023a");
+		// console.log(rs);
+		// var rs = reg.exec("1023a");
+		// console.log(rs);
+		// var str="00000802";
+		var reg = new RegExp("([0]*)([1-9a-f]+[0-9a-f]+)", "ig");
+		// console.info(reg.exec($(element).text()));
+
+		var blockhash = $(element).text();
+		var arr = reg.exec(blockhash);
+		if (arr[1].length > 2) {
+			$(element).html('<span class="text-black">0<sub>' + arr[1].length + '</sub></span>' + arr[2]);
+		}
+	});
+}
