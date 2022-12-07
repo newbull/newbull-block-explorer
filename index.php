@@ -1,5 +1,5 @@
 <?php
-$version = '1.7.0';
+$version = '0.14.2.18';
 define("IN_SCRIPT", true);
 
 require_once 'conf/config.php';
@@ -9,6 +9,7 @@ require_once 'libs/easybitcoin.php';
 $bitcoinrpc = new Bitcoin($config["rpc_user"], $config["rpc_password"], $config["rpc_host"], $config["rpc_port"]);
 
 //init url path prefix
+$config["explorer_path"] = substr(str_replace(dirname(dirname(__FILE__)), "", __DIR__), 1) . "/";
 if ($config["url_rewrite"]) {
     $name = isset($_GET['name']) ? $_GET['name'] : "";
     list($url_param_get_action, $url_param_get_value) = explode("/", $name);
@@ -40,6 +41,9 @@ switch ($url_param_get_action) {
             if ($rawtransaction === false) {
                 continue;
             }
+            // echo "<pre>";
+            // print_r($rawtransaction);
+            // echo "</pre>";
 
             foreach ($rawtransaction['vout'] as $vout) {
                 if ($vout['value'] > 0.0) {
@@ -54,10 +58,10 @@ switch ($url_param_get_action) {
         if (count($output['transactions']) > 0) {
             foreach ($output['transactions'] as $value) {
                 $output['memory_pool_list_tbody'] .= '<tr><td class="text-start">';
-                $output['memory_pool_list_tbody'] .= '<a class="text-info" href="' . $url_path["tx"] . $value["tx"] . '">' . $value["tx"] . '</a>';
+                $output['memory_pool_list_tbody'] .= '<a href="' . $url_path["tx"] . $value["tx"] . '">' . $value["tx"] . '</a>';
                 $output['memory_pool_list_tbody'] .= '</td>';
                 $output['memory_pool_list_tbody'] .= '<td class="text-start" colspan="2">';
-                $output['memory_pool_list_tbody'] .= '<table class="table table-borderless text-white-50 table-sm"><tbody>';
+                $output['memory_pool_list_tbody'] .= '<table class="table table-borderless table-sm"><tbody>';
                 foreach ($value["vout"] as $vout) {
                     $output['memory_pool_list_tbody'] .= '<tr><td class="text-start" style="width:40%">' . $vout["value"] . ' ' . $config["symbol"] . '</td><td class="text-start">';
                     foreach ($vout["addresses"] as $address) {
@@ -81,7 +85,7 @@ switch ($url_param_get_action) {
             exit($bitcoinrpc->error);
         }
         $output['blockcount'] = $info['blocks'];
-        $output['blockcount_url'] = "<a class=\"btn3\" href=\"" . $url_path["height"] . $info['blocks'] . "\">" . $info['blocks'] . "</a>";
+        $output['blockcount_url'] = "<a href=\"" . $url_path["height"] . $info['blocks'] . "\">" . $info['blocks'] . "</a>";
         $output['connections'] = $info['connections'];
         if ($config["proofof"] === "pow") {
             $output['difficulty'] = short_number($info['difficulty'], 1000, 3, "");
@@ -89,6 +93,13 @@ switch ($url_param_get_action) {
             $output['difficulty'] = $info['difficulty']['proof-of-work'];
             $output['difficulty_pos'] = $info['difficulty']['proof-of-stake'];
         }
+        $blocktemplate = $bitcoinrpc->getblocktemplate();
+        if ($bitcoinrpc->status !== 200 && $bitcoinrpc->error !== '') {
+            exit($bitcoinrpc->error);
+        }
+        $current_reward = substr($blocktemplate['coinbasevalue'], 0, strlen($blocktemplate['coinbasevalue']) - 8);
+        $output['reward'] = $current_reward;
+        $output['nextreward_blocks'] = (floor(($info['blocks'] - $config["halving_reward_since"]) / $config["halving_reward_per_blocks"]) + 1) * $config["halving_reward_per_blocks"] + $config["halving_reward_since"] - $info['blocks'];
 
         $mininginfo = $bitcoinrpc->getmininginfo();
         if ($bitcoinrpc->status !== 200 && $bitcoinrpc->error !== '') {
@@ -152,7 +163,7 @@ switch ($url_param_get_action) {
 
         if (count($output['blocks']) > 0) {
             foreach ($output['blocks'] as $value) {
-                $output['block_list_tbody'] .= "<tr><td><a class=\"text-info\" href=\"" . $url_path["block"] . $value["height"] . "\">" . $value["height"] . "</a></td><td><a class=\"text-info\" href=\"" . $url_path["blockhash"] . $value["hash"] . "\">" . $value["hash"] . "</a></td><td>" . $value["difficulty"] . "</td><td>" . $value["date"] . "</td><td>" . $value["tx_count"] . "</td><td>" . $value["value_out"] . "</td><td>" . $value["size"] . "</td></tr>";
+                $output['block_list_tbody'] .= "<tr><td><a href=\"" . $url_path["block"] . $value["height"] . "\">" . $value["height"] . "</a></td><td><a class=\"blockhash\" href=\"" . $url_path["blockhash"] . $value["hash"] . "\">" . $value["hash"] . "</a></td><td>" . $value["difficulty"] . "</td><td>" . $value["date"] . "</td><td>" . $value["tx_count"] . "</td><td>" . $value["value_out"] . "</td><td>" . $value["size"] . "</td></tr>";
             }
         }
 
@@ -164,16 +175,20 @@ switch ($url_param_get_action) {
             }
             $output["newer_page"] = $url_path["height"] . $value;
             $output["newer_page_display"] = "";
+            $output["newer_page_disabled"] = "";
         } else {
             $output["newer_page"] = "";
             $output["newer_page_display"] = ' style="display: none;"';
+            $output["newer_page_disabled"] = " disabled";
         }
         if ($height - count($output['blocks']) >= 0) {
             $output["older_page"] = $url_path["height"] . ($height - $config["blocks_per_page"]);
             $output["older_page_display"] = "";
+            $output["older_page_disabled"] = "";
         } else {
             $output["older_page"] = "";
             $output["older_page_display"] = ' style="display: none;"';
+            $output["older_page_disabled"] = " disabled";
         }
 
         if (!$output['memory_pool_list_tbody']) {
@@ -192,6 +207,7 @@ switch ($url_param_get_action) {
             $output["title"] = "";
             $output["description"] = $config["explorer_name"] . " homepage. This page shows latest " . $config["blocks_per_page"] . " blocks.";
         }
+        $output["current_page"] = "";
 
         exit(get_html("index-body", $output));
         break;
@@ -247,7 +263,7 @@ switch ($url_param_get_action) {
         }
 
         $output['transaction_detail_tbody'] .= "<tr><th class=\"text-end\" style=\"width:30%\">txid</th><td class=\"text-start\">" . $rawtransaction["txid"] . "</td></tr>";
-        $output['transaction_detail_tbody'] .= "<tr><th class=\"text-end\">Block Hash</th><td class=\"text-start\">" . '<a class="text-info" href="' . $url_path["blockhash"] . $rawtransaction["blockhash"] . '">' . $rawtransaction["blockhash"] . "</a></td></tr>";
+        $output['transaction_detail_tbody'] .= "<tr><th class=\"text-end\">Block Hash</th><td class=\"text-start\">" . '<a href="' . $url_path["blockhash"] . $rawtransaction["blockhash"] . '">' . $rawtransaction["blockhash"] . "</a></td></tr>";
         $output['transaction_detail_tbody'] .= "<tr><th class=\"text-end\">Time</th><td class=\"text-start\">" . gmdate($config["date_format"], $rawtransaction["time"]) . " UTC</td></tr>";
         $output['transaction_detail_tbody'] .= "<tr><th class=\"text-end\">Version</th><td class=\"text-start\">" . $rawtransaction["version"] . "</td></tr>";
         $output['transaction_detail_tbody'] .= "<tr><th class=\"text-end\">Confirmations</th><td class=\"text-start\">" . $rawtransaction["confirmations"] . "</td></tr>";
@@ -260,7 +276,7 @@ switch ($url_param_get_action) {
                     $output['tx_list_tbody'] .= 'coinbase:<br>' . $vin["coinbase"];
                 } else {
                     if ($vin['vout'] > 0) {
-                        $output['tx_list_tbody'] .= 'txid: <a class="text-info" href="' . $url_path["tx"] . $vin["txid"] . '">' . $vin["txid"] . '</a><br>';
+                        $output['tx_list_tbody'] .= 'txid: <a href="' . $url_path["tx"] . $vin["txid"] . '">' . $vin["txid"] . '</a><br>';
                     } else {
                         $output['tx_list_tbody'] .= 'txid: ' . $vin["txid"] . '<br>';
                     }
@@ -287,6 +303,7 @@ switch ($url_param_get_action) {
 
         $output["title"] = "Transaction Detail " . $tx . " - ";
         $output["description"] = "This transaction's txid is " . $rawtransaction["txid"] . ". It was made transaction at " . gmdate($config["date_format"], $rawtransaction["time"]) . " UTC. And this transaction belongs to the block hash " . $rawtransaction["blockhash"] . ".";
+        $output["current_page"] = "tx";
 
         // echo json_encode($output);
         // exit;
@@ -297,16 +314,17 @@ switch ($url_param_get_action) {
         $search = $url_param_get_value;
 
         if (preg_match('/^[0-9]{1,6}$/i', $search)) {
-            $output["search_result"] = 'Search Block with Height<br><a class="text-info" href="' . $url_path["block"] . $search . '">' . $search . '</a>';
+            $output["search_result"] = 'Search Block with Height<br><a href="' . $url_path["block"] . $search . '">' . $search . '</a>';
         } else if (preg_match('/^[0-9a-f]{64}$/i', $search)) {
-            $output["search_result"] = 'Search Block with Hash<br><a class="text-info" href="' . $url_path["blockhash"] . $search . '">' . $search . '</a>';
+            $output["search_result"] = 'Search Block with Hash<br><a href="' . $url_path["blockhash"] . $search . '">' . $search . '</a>';
             $output["search_result"] .= '<br><br>';
-            $output["search_result"] .= 'Search txid<br><a class="text-info" href="' . $url_path["tx"] . $search . '">' . $search . '</a>';
+            $output["search_result"] .= 'Search txid<br><a href="' . $url_path["tx"] . $search . '">' . $search . '</a>';
         } else {
             $output["search_result"] = 'Search for some valid data';
         }
         $output["title"] = "Search result for " . $search . " - ";
         $output["description"] = "Search result for " . $search;
+        $output["current_page"] = "search";
 
         exit(get_html("search-body", $output));
         break;
@@ -322,6 +340,11 @@ switch ($url_param_get_action) {
         if ($bitcoinrpc->status !== 200 && $bitcoinrpc->error !== '') {
             exit($bitcoinrpc->error);
         }
+        $blocktemplate = $bitcoinrpc->getblocktemplate();
+        if ($bitcoinrpc->status !== 200 && $bitcoinrpc->error !== '') {
+            exit($bitcoinrpc->error);
+        }
+        $current_reward = substr($blocktemplate['coinbasevalue'], 0, strlen($blocktemplate['coinbasevalue']) - 8);
 
         $output = array();
         // getblockchaininfo
@@ -336,7 +359,7 @@ switch ($url_param_get_action) {
         $output['stats_tbody'] .= "<tr><th class=\"text-end\">pruned</th><td class=\"text-start\">" . ($getblockchaininfo["pruned"] ? "true" : "false") . "</td></tr>";
         $output['stats_tbody'] .= "<tr><th class=\"text-end\">softforks</th><td class=\"text-start\">";
         if (count($getblockchaininfo["softforks"]) > 0) {
-            $output['stats_tbody'] .= '<table class="table table-bordered text-white-50 w-75 text-center"><tbody>';
+            $output['stats_tbody'] .= '<table class="table table-bordered w-75 text-center"><tbody>';
             // $output['stats_tbody'] .= '<tr><th>id</th><th>version</th><th>enforce</th><th>found</th><th>required</th><th>window</th><th>reject</th><th>found</th><th>required</th><th>window</th></tr>';
             $output['stats_tbody'] .= '<tr><th>id</th><th>version</th><th>reject</th></tr>';
             foreach ($getblockchaininfo["softforks"] as $softforks) {
@@ -348,7 +371,7 @@ switch ($url_param_get_action) {
         $output['stats_tbody'] .= '</td></tr>';
         $output['stats_tbody'] .= "<tr><th class=\"text-end\">bip9_softforks</th><td class=\"text-start\">";
         if (count($getblockchaininfo["bip9_softforks"]) > 0) {
-            $output['stats_tbody'] .= '<table class="table table-bordered text-white-50 w-75 text-center"><tbody>';
+            $output['stats_tbody'] .= '<table class="table table-bordered w-75 text-center"><tbody>';
             $output['stats_tbody'] .= '<tr><th>id</th><th>status</th><th>bit</th><th>startTime (UTC)</th><th>timeout (UTC)</th><th>since block</th></tr>';
             foreach ($getblockchaininfo["bip9_softforks"] as $key => $bip9_softforks) {
                 $output['stats_tbody'] .= '<tr><td>' . $key . '</td><td>' . $bip9_softforks['status'] . '</td><td>' . ($bip9_softforks['bit'] ? $bip9_softforks['bit'] : 0) . '</td><td>' . gmdate($config["date_format"], $bip9_softforks['startTime']) . '</td><td>' . gmdate($config["date_format"], $bip9_softforks['timeout']) . '</td><td>' . $bip9_softforks['since'] . '</td></tr>';
@@ -365,12 +388,13 @@ switch ($url_param_get_action) {
         $output['stats_tbody'] .= "<tr><th class=\"text-end\">total_amount</th><td class=\"text-start\">" . number_format2($config["total_amount"]) . " " . $config["symbol"] . "</td></tr>";
         $output['stats_tbody'] .= "<tr><th class=\"text-end\">mined coins</th><td class=\"text-start\">" . number_format2($gettxoutsetinfo["total_amount"]) . " " . $config["symbol"] . " (" . round($gettxoutsetinfo["total_amount"] / $config["total_amount"] * 100, 2) . "%)</td></tr>";
         $output['stats_tbody'] .= "<tr><th class=\"text-end\">remaining coins</th><td class=\"text-start\">" . number_format2($config["total_amount"] - $gettxoutsetinfo["total_amount"]) . " " . $config["symbol"] . "</td></tr>";
-        $output['stats_tbody'] .= "<tr><th class=\"text-end\">block reward</th><td class=\"text-start\">" . $config["block_reward"] . " " . $config["symbol"] . "</td></tr>";
+        $output['stats_tbody'] .= "<tr><th class=\"text-end\">block reward</th><td class=\"text-start\">" . $current_reward . " " . $config["symbol"] . "</td></tr>";
         $output['stats_tbody'] .= "<tr><th class=\"text-end\">Actual Target Spacing</th><td class=\"text-start\">" . round(((time() - $config["genesis_block_timestamp"]) / $getblockchaininfo["blocks"] / 60), 2) . " (" . ($config["nTargetSpacing"] / 60) . ") minutes</td></tr>";
         $output['stats_tbody'] .= "<tr><th class=\"text-end\">age</th><td class=\"text-start\">" . round(((time() - $config["genesis_block_timestamp"]) / 31536000), 2) . " years</td></tr>";
 
         $output["title"] = "Stats - ";
         $output["description"] = $config["explorer_name"] . " stats page.";
+        $output["current_page"] = "stats";
 
         exit(get_html("stats-body", $output));
         break;
@@ -430,12 +454,13 @@ switch ($url_param_get_action) {
                 }
                 // $output['block_list_tbody'] .= "<tr><td><a class=\"text-info\" href=\"" . $url_path["block"] . $value["height"] . "\">" . $value["height"] . "</a></td><td><a class=\"text-info\" href=\"" . $url_path["blockhash"] . $value["hash"] . "\">" . $value["hash"] . "</a></td><td>" . $value["difficulty"] . "</td><td>" . $value["date"] . "</td><td>" . $value["tx_count"] . "</td><td>" . $value["value_out"] . "</td><td>" . $value["size"] . "</td></tr>";
                 // $output['block_list_tbody'] .= "<tr><td>" . $n . "</td><td><a class=\"text-info\" href=\"" . $url_path["block"] . $value["height"] . "\">" . $value["height"] . "</a></td><td><a class=\"text-info\" href=\"" . $url_path["blockhash"] . $value["hash"] . "\">" . $value["hash"] . "</a></td><td>" . $value["branchlen"] . "</td><td>" . $value["status"] . "</td><td>" . $value["difficulty"] . "</td><td>" . $value["date"] . "</td><td>" . $value["tx_count"] . "</td><td>" . $value["value_out"] . "</td><td>" . $value["size"] . "</td></tr>";
-                $output['block_list_tbody'] .= "<tr><td>" . $n . "</td><td><a class=\"text-info\" href=\"" . $url_path["block"] . $value["height"] . "\">" . $value["height"] . "</a></td><td><a class=\"text-info\" href=\"" . $url_path["blockhash"] . $value["hash"] . "\">" . $value["hash"] . "</a></td><td>" . $value["branchlen"] . "</td><td>" . $value["status"] . "</td><td>" . $value["difficulty"] . "</td><td>" . $value["date"] . "</td><td>" . $value["tx_count"] . "</td><td>" . $value["size"] . "</td></tr>";
+                $output['block_list_tbody'] .= "<tr><td>" . $n . "</td><td><a href=\"" . $url_path["block"] . $value["height"] . "\">" . $value["height"] . "</a></td><td><a class=\"blockhash\" href=\"" . $url_path["blockhash"] . $value["hash"] . "\">" . $value["hash"] . "</a></td><td>" . $value["branchlen"] . "</td><td>" . $value["status"] . "</td><td>" . $value["difficulty"] . "</td><td>" . $value["date"] . "</td><td>" . $value["tx_count"] . "</td><td>" . $value["size"] . "</td></tr>";
             }
         }
 
         $output["title"] = "Chaintips " . $height . " - ";
         $output["description"] = $config["explorer_name"] . " block list page. This page shows chaintips.";
+        $output["current_page"] = "chaintips";
 
         exit(get_html("chaintips-body", $output));
         break;
@@ -457,8 +482,8 @@ function get_output_from_block($block)
     $output['block_detail_tbody'] .= "<tr><th class=\"text-end\">Nonce</th><td class=\"text-start\">" . $block["nonce"] . "</td></tr>";
     $output['block_detail_tbody'] .= "<tr><th class=\"text-end\">Chainwork</th><td class=\"text-start\">" . $block["chainwork"] . "</td></tr>";
     $output['block_detail_tbody'] .= "<tr><th class=\"text-end\">Merkleroot</th><td class=\"text-start\">" . $block["merkleroot"] . "</td></tr>";
-    $output['block_detail_tbody'] .= "<tr><th class=\"text-end\">Previous block</th><td class=\"text-start\">" . ($block["previousblockhash"] ? "<a class=\"text-info\" href=\"" . $url_path["blockhash"] . $block["previousblockhash"] . "\">" . $block["previousblockhash"] . "</a>" : "") . "</td></tr>";
-    $output['block_detail_tbody'] .= "<tr><th class=\"text-end\">Next block</th><td class=\"text-start\">" . ($block["nextblockhash"] ? "<a class=\"text-info\" href=\"" . $url_path["blockhash"] . $block["nextblockhash"] . "\">" . $block["nextblockhash"] . "</a>" : "") . "</td></tr>";
+    $output['block_detail_tbody'] .= "<tr><th class=\"text-end\">Previous block</th><td class=\"text-start\">" . ($block["previousblockhash"] ? "<a href=\"" . $url_path["blockhash"] . $block["previousblockhash"] . "\">" . $block["previousblockhash"] . "</a>" : "") . "</td></tr>";
+    $output['block_detail_tbody'] .= "<tr><th class=\"text-end\">Next block</th><td class=\"text-start\">" . ($block["nextblockhash"] ? "<a href=\"" . $url_path["blockhash"] . $block["nextblockhash"] . "\">" . $block["nextblockhash"] . "</a>" : "") . "</td></tr>";
     $output['block_detail_tbody'] .= "<tr><th class=\"text-end\">Transactions</th><td class=\"text-start\">" . count($block["tx"]) . "</td></tr>";
 
     if (count($block["tx"]) > 0) {
@@ -494,10 +519,10 @@ function get_output_from_block($block)
     if (count($output['transactions']) > 0) {
         foreach ($output['transactions'] as $value) {
             $output['block_detail_tbody'] .= '<tr><th class="text-end">tx</th><td class="text-start">';
-            $output['block_detail_tbody'] .= '<a class="text-info" href="' . $url_path["tx"] . $value["tx"] . '">' . $value["tx"] . '</a>';
+            $output['block_detail_tbody'] .= '<a href="' . $url_path["tx"] . $value["tx"] . '">' . $value["tx"] . '</a>';
             $output['block_detail_tbody'] .= '</td></tr>';
             $output['block_detail_tbody'] .= '<tr><th class="text-end"></th><td class="text-start">';
-            $output['block_detail_tbody'] .= '<table class="table table-borderless text-white-50 table-sm w-75"><tbody>';
+            $output['block_detail_tbody'] .= '<table class="table table-borderless table-sm w-75"><tbody>';
             if ($value["coinbase"]) {
                 $reward = " <span class=\"text-muted\">*</span>";
             } else {
@@ -517,6 +542,7 @@ function get_output_from_block($block)
     $output["height"] = $block["height"];
     $output["title"] = $block["height"] . " Block Detail - ";
     $output["description"] = "This block's height is " . $block["height"] . ", and the block hash is " . $block["hash"] . ". It was mined at " . gmdate($config["date_format"], $block["time"]) . " UTC.";
+    $output["current_page"] = "blockhash";
 
     return $output;
 }
@@ -528,6 +554,7 @@ function send404()
     http_response_code(404);
     $output["title"] = "Oops! 404 Not Found - ";
     $output["description"] = "Oops! 404 Not Found";
+    $output["current_page"] = "404";
 
     exit(get_html("404", $output));
 }

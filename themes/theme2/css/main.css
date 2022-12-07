@@ -1,0 +1,23 @@
+/* .text-start {
+	text-align: left !important;
+}
+
+.text-end {
+	text-align: right !important;
+}
+
+.text-black {
+	color: black;
+} */
+a {
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: underline;
+}
+a.page-link:hover {
+	text-decoration: none;
+}
+a[role='button']:hover {
+	text-decoration: none;
+}

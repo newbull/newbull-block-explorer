@@ -1,0 +1,82 @@
+﻿<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>{$title}{$explorer_name}</title>
+	<meta name="description" content="{$description}">
+	<!-- Place favicon.ico in the root directory -->
+	<link rel="icon" href="{$root_path}{$explorer_path}favicon.ico" sizes="any">
+	<!-- all css here -->
+	<!-- bootstrap v5.2.3 css -->
+	<link rel="stylesheet" href="{$theme_path}css/bootstrap.min.css">
+	<link rel="stylesheet" href="{$theme_path}css/main.min.css">
+	<!-- all js here -->
+	<!-- jquery latest version -->
+	<script src="{$theme_path}js/jquery-2.1.4.min.js"></script>
+	<!-- bootstrap js -->
+	<script src="{$theme_path}js/bootstrap.bundle.min.js"></script>
+	<!-- Stats-Number-Scroller-Animation-JavaScript -->
+	<script src="{$theme_path}js/waypoints.min.js"></script>
+	<script src="{$theme_path}js/counterup.min.js"></script>
+	<!-- main js -->
+	<script src="{$theme_path}js/main.min.js?20221207"></script>
+	<script>
+		var root_path = '{$root_path}';
+		var explorer_path = '{$explorer_path}';
+		var current_page = '{$current_page}';
+		$(document).ready(function ($) {
+			$(".nav-link").each(function (index, domElement) {
+				var _obj = $(domElement);
+				var _href = _obj.attr("href");
+				_obj.removeClass("active");
+				if (_href == root_path + explorer_path + current_page) {
+					_obj.addClass("active");
+				}
+			});
+
+			if (current_page == "") {
+				get_nextdiff('{$get_nextdiff_url}');
+				setInterval(() => {
+					get_nextdiff('{$get_nextdiff_url}');
+				}, 180000);
+			}
+			if ($('.blockhash').length > 0) {
+				blockhash_shorter();
+			}
+
+			run_clock('clockdiv');
+		});
+	</script>
+</head>
+
+<body>
+	<nav class="navbar navbar-expand-lg bg-light">
+		<div class="container-fluid">
+			<img src="{$theme_path}img/logo/logo-209x64-white-border.png" alt="{$name} logo" width="104" height="32"
+				class="d-inline-block align-text-top" />
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+				data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+				aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="navbarSupportedContent">
+				<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+					<li class="nav-item">
+					<li class="nav-item">
+						<a class="nav-link active" href="{$root_path}{$explorer_path}">Explorer Overview</a>
+					</li>
+					<li class="nav-item"><a class="nav-link" href="{$root_path}{$explorer_path}stats">Stats</a></li>
+					<li class="nav-item"><a class="nav-link" href="{$root_path}{$explorer_path}chaintips">Chaintips</a>
+					</li>
+				</ul>
+				<form class="d-flex" role="search">
+					<input class="form-control me-2" type="search" size="50"
+						placeholder="enter the block height/hash or txid" id="input_search_block" aria-label="Search">
+					<button class="btn btn-outline-secondary" type="button"
+						onclick="search_block('{$search_url}')">Search</button>
+				</form>
+			</div>
+		</div>
+	</nav>

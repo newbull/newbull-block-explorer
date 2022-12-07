@@ -1,0 +1,106 @@
+﻿<div class="container">
+	<div class="table-responsive">
+		<table class="table table-bordered">
+			<thead>
+				<tr>
+					<th>Currency</th>
+					<th>Blocks</th>
+					<th>Hashrate</th>
+					<th>Difficulty</th>
+					<th>Reward</th>
+					<th>Blockchain</th>
+					<th>Connections</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><a href="{$homepage}">{$currency} ({$symbol})</a></td>
+					<td>{$blockcount_url}</td>
+					<td>{$hashrate}</td>
+					<td>{$difficulty} ({$nextdiff_blocks})</td>
+					<td>{$reward} ({$nextreward_blocks})</td>
+					<td>{$chain}</td>
+					<td>{$connections}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<h2 class="mt-3">Latest Blocks</h2>
+	<div class="table-responsive">
+		<table class="table table-bordered table-striped table-hover">
+			<thead>
+				<tr>
+					<th>Height</th>
+					<th>Block Hash</th>
+					<th>Difficulty</th>
+					<th>Time (UTC)</th>
+					<th>Transactions</th>
+					<th>Value out</th>
+					<th>Size</th>
+				</tr>
+			</thead>
+			<tbody>
+				{$block_list_tbody}
+			</tbody>
+		</table>
+	</div>
+	<nav aria-label="Page navigation">
+		<ul class="pagination justify-content-center">
+			<li class="page-item{$newer_page_disabled}">
+				<a class="page-link" href="{$newer_page}">
+					<span aria-hidden="true">&larr;</span> Newer</a>
+			</li>
+			<!-- <li class="page-item">&nbsp;&nbsp;</li> -->
+			<li class="page-item{$older_page_disabled}">
+				<a class="page-link" href="{$older_page}">
+					Older <span aria-hidden="true">&rarr;</span></a>
+			</li>
+		</ul>
+	</nav>
+	<div class="mt-3" {$memory_pool_list_tbody_display}>
+		<h2>Memory Pool</h2>
+		<div class="table-responsive">
+			<table class="table table-bordered table-striped table-hover">
+				<thead>
+					<tr>
+						<th>Transaction ID</th>
+						<th>Amount</th>
+						<th>Send To</th>
+					</tr>
+				</thead>
+				<tbody>
+					{$memory_pool_list_tbody}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div class="text-center mt-3" {$nextdiff_display}>
+		<h2>Next difficulty & Time remaining</h2>
+		<div style="margin-bottom: 2rem;">
+			<button class="btn btn-primary btn-lg disabled">
+				<span class="counter" data-slno='1' data-min='0' data-max='' data-delay='5' data-increment='4'
+					id="nextdiff"></span>
+			</button>
+		</div>
+		<div id="clockdiv" data-start="{$nextdiff_timeline}">
+			<div class="table-responsive">
+				<table class="table" style="width: auto; margin: 0 auto;">
+					<tbody>
+						<tr>
+							<th class="days text-center" style="width: 25%;"></th>
+							<th class="hours text-center" style="width: 25%;"></th>
+							<th class="minutes text-center" style="width: 25%;"></th>
+							<th class="seconds text-center" style="width: 25%;"></th>
+						</tr>
+						<tr>
+							<td>Days</td>
+							<td>Hours</td>
+							<td>Minutes</td>
+							<td>Seconds</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>

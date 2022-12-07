@@ -6,18 +6,18 @@ NewBull Block Explorer work with [NewBull Core](https://newbull.org) fine. It's 
 
 ## Requirements
 
--   Linux or Windows server of running NewBull Core
--   NewBull Core v0.14.2
--   Apache 2.4.x
--   PHP 5.6.x with CURL and JSON support enabled
+- Linux or Windows server of running NewBull Core
+- NewBull Core v0.14.2
+- Apache 2.4.x
+- PHP 5.6.x with CURL and JSON support enabled
 
 ## Installation
 
 Installation is quite simple, and just complete the following steps:
 
--   Upload the contents of the archive to your server.
--   Modify the conf/config.php file with your own info and NewBull RPC info.
--   That's it! Open your any Modern Browsers to the install URL, and the block explorer should come up.
+- Upload the contents of the archive to your server.
+- Modify the conf/config.php file with your own info and NewBull RPC info.
+- That's it! Open your any Modern Browsers to the install URL, and the block explorer should come up.
 
 Note:
 
@@ -27,19 +27,17 @@ Note:
 
 Below shows the URLs available:
 
--   / = Home page, showig recent blocks list.
--   /block/HEIGHT = displays all detail and txs within a block.
--   /blockhash/HASH = displays all detail and txs within a block.
--   /tx/TXID = View a single tx
+- / = Home page, showig recent blocks list.
+- /block/HEIGHT = displays all detail and txs within a block.
+- /blockhash/HASH = displays all detail and txs within a block.
+- /tx/TXID = View a single tx
 
 ## Theme / Template Modifications
 
--   Content css, js, img, pages, header and footer files are in /themes/theme1/ directory.
--   CSS uses Bootstrap 3.x as requested.
+- Content css, js, img, pages, header and footer files are in /themes/theme1/ directory.
+- CSS uses Bootstrap 3.x as requested.
 
 ## Donations
-
----
 
 NB: NbUSBit9Q8mrDYPMwv6fW17rykThe3X735
 
@@ -51,11 +49,35 @@ LTC:
 
 ## License
 
----
-
 MIT
 
+---
+
 ## Changelog
+
+2022-12-02 0.14.2.18
+
+change version from 1.8.0 to 0.14.2.18, This means that the current version is compatible with newbull/bitcoin core 0.14.2, and this is 18th update;
+
+add theme2 with bootstrap-5.2.3;
+
+add auto detection about root path;
+
+add highlight about navbar active item;
+
+add Reward and Next Reward Blocks to Overview page;
+
+add halving_reward_since, halving_reward_per_blocks to config;
+
+remove explorer_path from config;
+
+remove Home from navbar;
+
+remove logo link from navbar;
+
+change Explorer to Explorer Overview;
+
+fix some known issues;
 
 1.7.0 2021-11-27
 
@@ -83,7 +105,7 @@ add: block weight and version hex;
 
 remove: no longer used code;
 
-fix: bug;
+fix: some bugs;
 
 1.3.0 2020-03-28
 
@@ -105,7 +127,7 @@ refactor;
 
 0.9.0 2019-02-21
 
-fix bug;
+fix some bugs;
 
 0.8.0 2018-06-14
 
@@ -113,7 +135,7 @@ refactor;
 
 0.7.0 2018-01-04
 
-fix bug;
+fix some bugs;
 
 0.6.0 2017-11-27
 
@@ -121,7 +143,7 @@ add theme system;
 
 0.5.0 2017-09-06
 
-fix bug;
+fix some bugs;
 
 0.4.0 2017-09-05
 
@@ -129,11 +151,11 @@ add some features;
 
 0.3.0 2017-04-30
 
-fix bug;
+fix some bugs;
 
 0.2.0 2017-04-29
 
-add feature;
+add some features;
 
 0.1.0 2017-04-23
 
