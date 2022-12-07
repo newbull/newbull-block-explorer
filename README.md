@@ -34,8 +34,8 @@ Below shows the URLs available:
 
 ## Theme / Template Modifications
 
-- Content css, js, img, pages, header and footer files are in /themes/theme1/ directory.
-- CSS uses Bootstrap 3.x as requested.
+- Content css, js, img, pages, header and footer files are in /themes/theme2/ directory.
+- CSS uses Bootstrap 5.2.3 as requested.
 
 ## Donations
 
