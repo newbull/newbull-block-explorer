@@ -4,6 +4,8 @@
 
 NewBull Block Explorer work with [NewBull Core](https://newbull.org) fine. It's should work with others pow block chain, such as Bitcoin.
 
+For Windows11/10/8.1/8/7, you may download demo from [here](http://192.248.179.22/newbull-win-x86_64-0.14.2.20221207.7z), and use (get-filehash "this file fullpath") with powershell to check the file hash sha256 must be C0EAA132B57D99CA88A5905BD0F4F5D19DC0BB10FA64900F72A736DF7438AC82. When you unzip it, just run start-newbull-gui.bat, if everything ok, you will see the demo.
+
 ## Requirements
 
 - Linux or Windows server of running NewBull Core
