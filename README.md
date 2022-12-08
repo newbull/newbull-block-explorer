@@ -7,7 +7,7 @@ NewBull Block Explorer work with [NewBull Core](https://newbull.org) fine. It's 
 ## Requirements
 
 - Linux or Windows server of running NewBull Core
-- NewBull Core v0.14.2
+- NewBull Core v0.14.2 with -txindex option
 - Apache 2.4.x
 - PHP 5.6.x with CURL and JSON support enabled
 
